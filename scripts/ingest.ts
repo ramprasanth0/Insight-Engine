@@ -56,7 +56,7 @@ async function main() {
     const client = new GoogleGenAI({ apiKey });
     type VectorDoc = {
         id: string;
-        values: any;
+        values: number[];
         metadata: {
             text: string;
             source: string;
