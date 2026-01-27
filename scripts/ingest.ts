@@ -31,7 +31,6 @@ async function main() {
     for (const filepath of filepaths) {
         console.log(`Reading file: ${filepath}`);
         const content = await fs.readFile(filepath, "utf-8");
-        // We store the text AND the filename (metadata)
         rawDocs.push({
             metadata: { source: filepath },
             pageContent: content
@@ -50,7 +49,11 @@ async function main() {
 
 
     //step 4: create embeddings
-    const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+        throw new Error("GEMINI_API_KEY is not defined in the environment variables");
+    }
+    const client = new GoogleGenAI({ apiKey });
     type VectorDoc = {
         id: string;
         values: any;
@@ -71,16 +74,15 @@ async function main() {
         const batchPromises = batch.map(doc =>
             client.models.embedContent({
                 model: MODEL_NAME,
-                contents: doc.pageContent, // New SDK accepts string directly here
+                contents: doc.pageContent,
                 config: {
                     taskType: 'RETRIEVAL_DOCUMENT',
-                    title: doc.metadata.source // Optional: Helps the AI understand the context
+                    title: doc.metadata.source // Helps the AI understand the context
                 }
             })
         );
 
         // B. Run and wait for all 10 to finish
-        // types: Array<EmbedContentResponse>
         const responses = await Promise.all(batchPromises);
 
         // 🔍 DEBUG: Print the raw structure of the first response
@@ -109,10 +111,45 @@ async function main() {
 
 
     //step 5: store the data in the database
-    // const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY })
-    // const index = pc.index("insightengine")
+    //configure DB
+    const pineconeApiKey = process.env.PINECONE_API_KEY;
+    if (!pineconeApiKey) {
+        throw new Error("PINECONE_API_KEY is not defined in the environment variables");
+    }
+    const pc = new Pinecone({ apiKey: pineconeApiKey });
 
+    //configure index
+    const INDEX_NAME = "insight-engine-index";
+    const index = pc.index(INDEX_NAME);
+    const existingIndexes = pc.listIndexes();
+    const indexExists = (await existingIndexes).indexes?.some(idx => idx.name === INDEX_NAME)
 
+    if (!indexExists) {
+        console.log(`Creating index ${INDEX_NAME}...`)
+        await pc.createIndex({
+            name: INDEX_NAME,
+            dimension: 768,
+            metric: "cosine",
+            spec: {
+                serverless: { cloud: 'aws', region: 'us-east-1' }
+            }
+        })
+    }
+
+    // Wait for initialization
+    console.log("⏳ Waiting for index to initialize...");
+    await new Promise(resolve => setTimeout(resolve, 60000));
+
+    // Upsert data
+    const UPSERT_BATCH_SIZE = 100;
+    for (let i = 0; i < vectorDocs.length; i += UPSERT_BATCH_SIZE) {
+        const batch = vectorDocs.slice(i, i + UPSERT_BATCH_SIZE);
+        console.log(`Upserting batch ${i / UPSERT_BATCH_SIZE + 1}...`);
+        await index.namespace("nextjs-docs").upsert(batch)
+    }
+    console.log(`✅ Upserted ${vectorDocs.length} vectors!`);
+
+    console.log("🎉 Ingestion complete!");
 }
 
 main().catch((error) => {
