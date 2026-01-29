@@ -10,6 +10,9 @@ The project is split into two distinct workflows to ensure modularity and scalab
 
 * **Ingestion Engine (Offline):** A robust Node.js pipeline that reads, chunks, and indexes data.
 * **Query Engine (Online):** A Next.js API that retrieves context and generates answers in real-time.
+* **Architecture Diagram**:
+
+    ![Architecture Diagram](project%20info/Workflow.png)
 
 ---
 
@@ -72,6 +75,10 @@ Key Ingestion Steps:
 * **Embed**: Convert text to $768$-dimensional vectors via Gemini.
 * **Upsert**: Store vectors in the nextjs-docs namespace in Pinecone.
 
+* **Ingestion Workflow Diagram**:
+
+    ![Architecture Diagram](project%20info/Ingestion%20Engine.png)
+
 ---
 
 ## 💬 Query & Chat Logic
@@ -81,3 +88,7 @@ When a user asks a question, the application follows a strict **grounded retriev
 3. Prompt Grounding: Relevant chunks are injected into a System Prompt that instructs the AI to only answer based on the provided context.
 4. Streaming: The response is piped back to the user via a ReadableStream for a real-time chat experience.
 *    Note: This architecture ensures that if the information isn't in your documentation, the AI won't make it up, effectively eliminating hallucinations.
+
+* **RAG Pipleine Overview**:
+
+    ![Architecture Diagram](project%20info/rag-pipeline.png)
