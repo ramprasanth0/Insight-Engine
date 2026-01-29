@@ -32,7 +32,7 @@ export async function POST(req: Request) {
         }
 
         //search pinecone
-        const queryResponse = await pc.index("insight-engine-index").query({
+        const queryResponse = await pc.index("insight-engine-index").namespace("nextjs-docs").query({
             topK: 10,
             vector: queryVector,
             includeMetadata: true
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
 
         //build context from the search result
         const context = queryResponse.matches?.
-            map((match) => match.metadata?.chunktext).
+            map((match) => match.metadata?.text).
             filter(Boolean).join("\n\n");                //filter is used to "Keep only the items that actually have content. Throw away the trash."
         console.log("✅ Context built", context);
 
@@ -59,7 +59,7 @@ export async function POST(req: Request) {
         `.trim();
         //stream response from gemini (using context)
         const response = await client.models.generateContentStream({
-            model: 'gemini-2.0-flash',
+            model: 'gemini-2.5-flash',
             contents: [
                 { role: 'user', parts: [{ text: `Context: ${context}\n\nQuestion: ${lastMessage}` }] }
             ],
