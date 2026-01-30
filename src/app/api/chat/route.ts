@@ -1,5 +1,5 @@
-import { gemini } from "../../../../scripts/lib/gemini";
-import { pinecone } from "../../../../scripts/lib/pinecone";
+import { gemini } from "@/lib/gemini";
+import { pinecone } from "@/lib/pinecone";
 import { error } from "console";
 import { NextResponse } from "next/server";
 
