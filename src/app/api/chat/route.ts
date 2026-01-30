@@ -1,5 +1,5 @@
-import { GoogleGenAI } from "@google/genai";
-import { Pinecone } from "@pinecone-database/pinecone";
+import { gemini } from "../../../../scripts/lib/gemini";
+import { pinecone } from "../../../../scripts/lib/pinecone";
 import { error } from "console";
 import { NextResponse } from "next/server";
 
@@ -10,16 +10,9 @@ export async function POST(req: Request) {
         const { messages } = await req.json();
         const lastMessage = messages[messages.length - 1].content;
 
-        //setup client
-        //get key
-        const geminiApiKey = process.env.GEMINI_API_KEY;
-        const pineconeApiKey = process.env.PINECONE_API_KEY;
-        if (!geminiApiKey || !pineconeApiKey) {
-            throw new Error("API keys are not defined in the environment variables");
-        }
-        //initialize client
-        const client = new GoogleGenAI({ apiKey: geminiApiKey });
-        const pc = new Pinecone({ apiKey: pineconeApiKey });
+        //setup client (setup of clients is done in the lib folder)
+        const client = gemini;
+        const pc = pinecone;
 
         //embed the user query
         const embeddingResponse = await client.models.embedContent({
