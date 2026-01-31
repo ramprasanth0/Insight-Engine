@@ -64,14 +64,14 @@ export default function ChatPage() {
 
   // The JSX Layout
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-zinc-50">
+    <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-background">
       {/* 1. The Main Container */}
-      <Card className="w-full max-w-2xl h-[85vh] flex flex-col shadow-xl border-zinc-200">
+      <Card className="w-full max-w-2xl h-[85vh] flex flex-col shadow-xl border-border">
 
         {/* 2. Header */}
-        <CardHeader className="border-b bg-white">
-          <CardTitle className="flex items-center gap-2 text-zinc-800">
-            <div className="p-2 bg-indigo-600 rounded-lg text-white">
+        <CardHeader className="border-b border-border bg-card">
+          <CardTitle className="flex items-center gap-2 text-foreground">
+            <div className="p-2 bg-primary rounded-lg text-primary-foreground">
               <Bot size={20} />
             </div>
             Insight Engine

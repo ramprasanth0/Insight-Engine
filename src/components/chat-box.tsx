@@ -29,7 +29,7 @@ export function ChatBox({ messages, isLoading }: ChatBoxProps) {
     }, [messages]);
 
     return (
-        <CardContent className="flex-1 overflow-hidden p-0">
+        <CardContent className="flex-1 overflow-hidden p-0 bg-card">
             <ScrollArea className="h-full p-6" ref={scrollRef}>
                 <div className="space-y-6">
                     {messages.map((m, i) => (
@@ -37,15 +37,15 @@ export function ChatBox({ messages, isLoading }: ChatBoxProps) {
                             key={i}
                             className={`flex gap-3 ${m.role === "user" ? "flex-row-reverse" : ""}`}
                         >
-                            <Avatar className={m.role === "user" ? "bg-zinc-800" : "bg-indigo-600"}>
-                                <AvatarFallback className="text-white">
+                            <Avatar className={m.role === "user" ? "bg-primary" : "bg-muted"}>
+                                <AvatarFallback className="text-primary-foreground">
                                     {m.role === "user" ? <User size={18} /> : <Bot size={18} />}
                                 </AvatarFallback>
                             </Avatar>
 
                             <div className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm shadow-sm ${m.role === "user"
-                                ? "bg-zinc-800 text-white rounded-tr-none"
-                                : "bg-white border border-zinc-200 text-zinc-800 rounded-tl-none"
+                                ? "bg-primary text-primary-foreground rounded-tr-none"
+                                : "bg-muted text-muted-foreground border border-border rounded-tl-none"
                                 }`}>
                                 {m.content}
                             </div>
@@ -53,7 +53,7 @@ export function ChatBox({ messages, isLoading }: ChatBoxProps) {
                     ))}
 
                     {isLoading && messages[messages.length - 1]?.content === "" && (
-                        <div className="flex gap-2 items-center text-zinc-400 text-xs ml-12">
+                        <div className="flex gap-2 items-center text-muted-foreground text-xs ml-12">
                             <Loader2 size={14} className="animate-spin" />
                             Searching documents...
                         </div>
