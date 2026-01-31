@@ -70,7 +70,7 @@ export default function ChatPage() {
         // INITIAL STATE: Centered Layout
         <div className="flex flex-col items-center justify-center w-full max-w-2xl space-y-8 animate-in fade-in zoom-in duration-500">
           <div className="flex flex-col items-center space-y-4">
-            <div className="p-4 bg-primary/10 rounded-full ring-4 ring-primary/5">
+            <div className="p-4 rounded-full bg-gradient-to-r from-primary/10 via-foreground/10 to-primary/10 bg-[length:600%_auto] animate-shimmer ring-4 ring-primary/5">
               <Image
                 src={AppIcon}
                 alt="Insight Engine Icon"
@@ -79,7 +79,7 @@ export default function ChatPage() {
                 className="w-12 h-12"
               />
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 p-2 bg-clip-text text-transparent">
+            <h1 className="text-5xl md:text-7xl font-light font-[family-name:var(--font-bitcount)] bg-gradient-to-r from-primary via-foreground to-primary bg-[length:400%_auto] animate-shimmer bg-clip-text text-transparent p-4 mb-20 text-center whitespace-nowrap [word-spacing:1rem]">
               Insight Engine
             </h1>
             <p className="text-muted-foreground text-center max-w-md">

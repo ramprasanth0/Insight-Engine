@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Bitcount_Single } from "next/font/google";
 import "./globals.css";
+
+const bitcount = Bitcount_Single({
+  variable: "--font-bitcount",
+  weight: "400",
+  subsets: ["latin"],
+});
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -25,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-      // className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${bitcount.variable} antialiased`}
       >
         {children}
       </body>
