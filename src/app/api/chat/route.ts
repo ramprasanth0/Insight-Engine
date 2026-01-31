@@ -10,6 +10,8 @@ export async function POST(req: Request) {
         const { messages } = await req.json();
         const lastMessage = messages[messages.length - 1].content;
 
+        console.log(`✅ User Query received: "${lastMessage}"`);
+
         //setup client (setup of clients is done in the lib folder)
         const client = gemini;
         const pc = pinecone;
@@ -23,6 +25,7 @@ export async function POST(req: Request) {
         if (!queryVector) {
             throw (error)
         }
+        console.log("✅ Query Vector created");
 
         //search pinecone
         const queryResponse = await pc.index("insight-engine-index").namespace("nextjs-docs").query({
@@ -30,13 +33,15 @@ export async function POST(req: Request) {
             vector: queryVector,
             includeMetadata: true
         })
-        console.log("✅ Query Response received", queryResponse);
+        // console.log("✅ Query Response received", queryResponse);
+        console.log("✅ Query Response received");
 
         //build context from the search result
         const context = queryResponse.matches?.
             map((match) => match.metadata?.text).
             filter(Boolean).join("\n\n");                //filter is used to "Keep only the items that actually have content. Throw away the trash."
-        console.log("✅ Context built", context);
+        // console.log("✅ Context built", context);
+        console.log("✅ Context built");
 
         //Set Up Gemini Stream
         const systemPrompt = `
@@ -80,6 +85,7 @@ export async function POST(req: Request) {
                 }
             }
         })
+        console.log("✅ Stream Response created");
 
         //Return the raw Response object
         return new Response(streamResponse, {
