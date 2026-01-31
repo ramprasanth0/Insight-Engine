@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'; //force dynamic caching
+
 import { gemini } from "@/lib/gemini";
 import { pinecone } from "@/lib/pinecone";
 import { error } from "console";
