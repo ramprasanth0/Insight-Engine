@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChatBox, Message } from "@/components/chat-box";
 import { ChatInput } from "@/components/chat-input";
 import { Bot, Sparkles } from "lucide-react";
@@ -11,6 +11,49 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const [titleText, setTitleText] = useState("Insigh Engine");
+
+  useEffect(() => {
+    const originalText = "Insigh Engine";
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+
+    let glitchStep = 0;
+    const totalGlitchSteps = 15; // ~1.2s total
+    const glitchIntervalTime = 200;
+
+    // Phase 1: Initial Glitch
+    const glitchInterval = setInterval(() => {
+      if (glitchStep >= totalGlitchSteps) {
+        clearInterval(glitchInterval);
+        setTitleText(originalText);
+        startSteadyState();
+      } else {
+        const glitched = originalText.split('').map(c => {
+          if (c === ' ') return ' ';
+          return chars[Math.floor(Math.random() * chars.length)];
+        }).join('');
+        setTitleText(glitched);
+        glitchStep++;
+      }
+    }, glitchIntervalTime);
+
+    // Phase 2: Steady State (h/t toggle)
+    let steadyInterval: NodeJS.Timeout;
+    const startSteadyState = () => {
+      let isT = false;
+      steadyInterval = setInterval(() => {
+        isT = !isT;
+        // Toggle only the last letter of Insight: "Insight" vs "Insigt"
+        setTitleText(isT ? "Insigt Engine" : "Insigh Engine");
+      }, 2000);
+    };
+
+    return () => {
+      clearInterval(glitchInterval);
+      if (steadyInterval) clearInterval(steadyInterval);
+    };
+  }, []);
 
   const handleSendQuery = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,7 +123,7 @@ export default function ChatPage() {
               />
             </div>
             <h1 className="text-5xl md:text-7xl font-light font-[family-name:var(--font-bitcount)] bg-gradient-to-r from-primary via-foreground to-primary bg-[length:400%_auto] animate-shimmer bg-clip-text text-transparent p-4 mb-20 text-center whitespace-nowrap [word-spacing:1rem]">
-              Insight Engine
+              {titleText}
             </h1>
             <p className="text-muted-foreground text-center max-w-md">
               Ask anything about Next.js. I can help you find answers, debug code, and explore new ideas.

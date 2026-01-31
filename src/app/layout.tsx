@@ -4,7 +4,7 @@ import "./globals.css";
 
 const bitcount = Bitcount_Single({
   variable: "--font-bitcount",
-  weight: "400",
+  weight: "500",
   subsets: ["latin"],
 });
 
