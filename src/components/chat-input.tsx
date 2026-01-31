@@ -8,23 +8,22 @@ interface ChatInputProps {
     setInput: (value: string) => void;
     handleSendQuery: (e: React.FormEvent) => void;
     isLoading: boolean;
+    className?: string;
 }
 
-export function ChatInput({ input, setInput, handleSendQuery, isLoading }: ChatInputProps) {
+export function ChatInput({ input, setInput, handleSendQuery, isLoading, className }: ChatInputProps) {
     return (
-        <CardFooter className="p-4 bg-card border-t border-border">
-            <form onSubmit={handleSendQuery} className="flex w-full gap-2">
-                <Input
-                    placeholder="Ask anything about NextJs..."
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    disabled={isLoading}
-                    className="flex-1 bg-input border-border text-foreground focus-visible:ring-primary placeholder:text-muted-foreground"
-                />
-                <Button type="submit" disabled={isLoading} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                    {isLoading ? <Loader2 className="animate-spin" /> : <Send size={18} />}
-                </Button>
-            </form>
-        </CardFooter>
+        <form onSubmit={handleSendQuery} className={`flex w-full gap-2 ${className}`}>
+            <Input
+                placeholder="Ask anything about NextJs..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                disabled={isLoading}
+                className="flex-1 bg-input text-foreground focus-visible:ring-primary placeholder:text-muted-foreground"
+            />
+            <Button type="submit" disabled={isLoading} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                {isLoading ? <Loader2 className="animate-spin" /> : <Send size={18} />}
+            </Button>
+        </form>
     );
 }

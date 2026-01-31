@@ -2,8 +2,10 @@
 import { useState } from "react";
 import { ChatBox, Message } from "@/components/chat-box";
 import { ChatInput } from "@/components/chat-input";
-import { Bot } from "lucide-react";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Bot, Sparkles } from "lucide-react";
+import Image from "next/image";
+import { Card, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import AppIcon from "./icon.png";
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -62,33 +64,77 @@ export default function ChatPage() {
     }
   }
 
-  // The JSX Layout
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-background">
-      {/* 1. The Main Container */}
-      <Card className="w-full max-w-2xl h-[85vh] flex flex-col shadow-xl border-border">
-
-        {/* 2. Header */}
-        <CardHeader className="border-b border-border bg-card">
-          <CardTitle className="flex items-center gap-2 text-foreground">
-            <div className="p-2 bg-primary rounded-lg text-primary-foreground">
-              <Bot size={20} />
+      {messages.length === 0 ? (
+        // INITIAL STATE: Centered Layout
+        <div className="flex flex-col items-center justify-center w-full max-w-2xl space-y-8 animate-in fade-in zoom-in duration-500">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="p-4 bg-primary/10 rounded-full ring-4 ring-primary/5">
+              <Image
+                src={AppIcon}
+                alt="Insight Engine Icon"
+                width={48}
+                height={48}
+                className="w-12 h-12"
+              />
             </div>
-            Insight Engine
-          </CardTitle>
-        </CardHeader>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 p-2 bg-clip-text text-transparent">
+              Insight Engine
+            </h1>
+            <p className="text-muted-foreground text-center max-w-md">
+              Ask anything about Next.js. I can help you find answers, debug code, and explore new ideas.
+            </p>
+          </div>
 
-        {/* 3. The Chat Box Component */}
-        <ChatBox messages={messages} isLoading={isLoading} />
+          <div className="w-full shadow-lg rounded-xl overflow-hidden ring-1 ring-border/50">
+            <div className="bg-card p-2">
+              <ChatInput
+                input={input}
+                setInput={setInput}
+                handleSendQuery={handleSendQuery}
+                isLoading={isLoading}
+                className="p-2"
+              />
+            </div>
+          </div>
 
-        {/* 4. The Chat Input Component */}
-        <ChatInput
-          input={input}
-          setInput={setInput}
-          handleSendQuery={handleSendQuery}
-          isLoading={isLoading}
-        />
-      </Card>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 w-full text-xs text-muted-foreground">
+            {["Debug TypeScript", "Explain Hooks", "Generate API Route", "Suggest UI"].map((suggestion) => (
+              <button
+                key={suggestion}
+                onClick={() => setInput(suggestion)}
+                className="border border-border/50 bg-card/50 p-2 rounded-lg hover:bg-card hover:border-primary/50 transition-colors text-center truncate"
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
+        // CHAT STATE: Standard Layout
+        <Card className="w-full max-w-2xl h-[85vh] flex flex-col shadow-xl border-border animate-in slide-in-from-bottom-5 duration-500">
+          <CardHeader className="border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <div className="p-2 bg-primary rounded-lg text-primary-foreground">
+                <Bot size={20} />
+              </div>
+              Insight Engine
+            </CardTitle>
+          </CardHeader>
+
+          <ChatBox messages={messages} isLoading={isLoading} />
+
+          <CardFooter className="p-4 bg-card border-t border-border">
+            <ChatInput
+              input={input}
+              setInput={setInput}
+              handleSendQuery={handleSendQuery}
+              isLoading={isLoading}
+            />
+          </CardFooter>
+        </Card>
+      )}
     </main>
   );
 }
