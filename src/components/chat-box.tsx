@@ -64,12 +64,16 @@ export function ChatBox({ messages, isLoading }: ChatBoxProps) {
                         </div>
                     ))}
 
-                    {isLoading && messages[messages.length - 1]?.content === "" && (
-                        <div className="flex gap-2 items-center text-muted-foreground text-xs ml-12">
-                            <Loader2 size={14} className="animate-spin" />
-                            Searching documents...
-                        </div>
-                    )}
+                    {isLoading && (
+                        messages.length === 0 ||
+                        messages[messages.length - 1].role === "user" ||
+                        (messages[messages.length - 1].role === "assistant" && messages[messages.length - 1].content === "")
+                    ) && (
+                            <div className="flex gap-2 items-center text-muted-foreground text-xs ml-12">
+                                <Loader2 size={14} className="animate-spin" />
+                                Searching documents...
+                            </div>
+                        )}
                 </div>
             </ScrollArea>
         </CardContent>

@@ -9,10 +9,11 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
     try {
-        const { messages } = await req.json();
+        const { messages, namespaces } = await req.json();
         const lastMessage = messages[messages.length - 1].content;
 
         console.log(`✅ User Query received: "${lastMessage}"`);
+        console.log(`✅ Selected Namespaces: ${namespaces?.length ? namespaces.join(", ") : "ALL (default)"}`);
 
         //setup client (setup of clients is done in the lib folder)
         const client = gemini;
@@ -29,25 +30,39 @@ export async function POST(req: Request) {
         }
         console.log("✅ Query Vector created");
 
-        //search pinecone
-        const queryResponse = await pc.index("insight-engine-index").namespace("nextjs-docs").query({
-            topK: 10,
-            vector: queryVector,
-            includeMetadata: true
-        })
-        // console.log("✅ Query Response received", queryResponse);
-        console.log("✅ Query Response received");
+        // Determine which namespaces to query
+        const targetNamespaces = (namespaces && namespaces.length > 0)
+            ? namespaces
+            : ["nextjs-docs", "reactjs-docs"];
 
-        //build context from the search result
-        const context = queryResponse.matches?.
-            map((match) => match.metadata?.text).
-            filter(Boolean).join("\n\n");                //filter is used to "Keep only the items that actually have content. Throw away the trash."
-        // console.log("✅ Context built", context);
-        console.log("✅ Context built");
+        // Parallel query for all targeted namespaces
+        const queryPromises = targetNamespaces.map((ns: string) =>
+            //search user selected namespaces 
+            pc.index("insight-engine-index").namespace(ns).query({
+                topK: 5, // Reduce topK per namespace since we are aggregating
+                vector: queryVector,
+                includeMetadata: true
+            })
+        );
+
+        //wait for all queries to complete
+        const queryResponses = await Promise.all(queryPromises);
+        console.log("✅ Query Responses received");
+
+        // Aggregate matches from all namespace queries (flatmap is used to flatten the array of arrays)
+        const allMatches = queryResponses.flatMap(response => response.matches || []);
+
+        // Build context from the aggregated search results
+        const context = allMatches
+            .map((match) => match.metadata?.text)
+            .filter(Boolean)
+            .join("\n\n");
+
+        console.log(`✅ Context built with ${allMatches.length} matches`);
 
         //Set Up Gemini Stream
         const systemPrompt = `
-            You are the "Insight Engine," a helpful and precise technical assistant for the Next.js documentation.
+            You are the "Insight Engine," a helpful and precise technical assistant for the provided documentation.
 
             Your mission: Answer the user's question using ONLY the provided [Context] block.
 

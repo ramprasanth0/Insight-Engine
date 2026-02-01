@@ -6,11 +6,13 @@ import { Bot, Sparkles } from "lucide-react";
 import Image from "next/image";
 import { Card, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import AppIcon from "./icon.png";
+import { Button } from "@/components/ui/button";
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedNamespaces, setSelectedNamespaces] = useState<string[]>([]);
 
   const [titleText, setTitleText] = useState("Insight Engine");
 
@@ -77,7 +79,8 @@ export default function ChatPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          messages: [...messages, { role: "user", content: userMessage }]
+          messages: [...messages, { role: "user", content: userMessage }],
+          namespaces: selectedNamespaces
         }),
       });
 
@@ -112,6 +115,43 @@ export default function ChatPage() {
     }
   }
 
+  const toggleNamespace = (ns: string) => {
+    setSelectedNamespaces(prev =>
+      prev.includes(ns)
+        ? prev.filter(n => n !== ns)
+        : [...prev, ns]
+    );
+  };
+
+  const getDynamicContextText = () => {
+    if (selectedNamespaces.length === 0) return "Next.js and React.js";
+    if (selectedNamespaces.length === 2) return "Next.js and React.js";
+    if (selectedNamespaces.includes("nextjs-docs")) return "Next.js";
+    if (selectedNamespaces.includes("reactjs-docs")) return "React.js";
+    return "Next.js and React.js";
+  };
+
+  const NamespaceButtons = () => (
+    <div className="flex gap-2 mb-2 px-2">
+      <Button
+        variant={selectedNamespaces.includes("nextjs-docs") ? "default" : "outline"}
+        size="sm"
+        onClick={() => toggleNamespace("nextjs-docs")}
+        className="rounded-full text-xs"
+      >
+        Next.js
+      </Button>
+      <Button
+        variant={selectedNamespaces.includes("reactjs-docs") ? "default" : "outline"}
+        size="sm"
+        onClick={() => toggleNamespace("reactjs-docs")}
+        className="rounded-full text-xs"
+      >
+        React.js
+      </Button>
+    </div>
+  );
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-background">
       {messages.length === 0 ? (
@@ -131,12 +171,13 @@ export default function ChatPage() {
               {titleText}
             </h1>
             <p className="text-muted-foreground text-center max-w-md">
-              Ask anything about Next.js. I can help you find answers, debug code, and explore new ideas.
+              Ask anything about {getDynamicContextText()}. I can help you find answers, debug code, and explore new ideas.
             </p>
           </div>
 
           <div className="w-full shadow-lg rounded-xl overflow-hidden ring-1 ring-border/50">
             <div className="bg-card p-2">
+              <NamespaceButtons />
               <ChatInput
                 input={input}
                 setInput={setInput}
@@ -173,13 +214,16 @@ export default function ChatPage() {
 
           <ChatBox messages={messages} isLoading={isLoading} />
 
-          <CardFooter className="p-4 bg-card border-t border-border">
-            <ChatInput
-              input={input}
-              setInput={setInput}
-              handleSendQuery={handleSendQuery}
-              isLoading={isLoading}
-            />
+          <CardFooter className="flex flex-col p-4 bg-card border-t border-border">
+            <div className="w-full">
+              <NamespaceButtons />
+              <ChatInput
+                input={input}
+                setInput={setInput}
+                handleSendQuery={handleSendQuery}
+                isLoading={isLoading}
+              />
+            </div>
           </CardFooter>
         </Card>
       )}
