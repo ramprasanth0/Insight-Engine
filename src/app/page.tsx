@@ -12,45 +12,63 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const [titleText, setTitleText] = useState("Insigh Engine");
+  const [titleText, setTitleText] = useState("Insigt Engine");
 
   useEffect(() => {
-    const originalText = "Insigh Engine";
+    const targetText = "Insigt Engine";
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
 
-    let glitchStep = 0;
-    const totalGlitchSteps = 15; // ~1.2s total
-    const glitchIntervalTime = 200;
-
-    // Phase 1: Initial Glitch
-    const glitchInterval = setInterval(() => {
-      if (glitchStep >= totalGlitchSteps) {
-        clearInterval(glitchInterval);
-        setTitleText(originalText);
-        startSteadyState();
-      } else {
-        const glitched = originalText.split('').map(c => {
-          if (c === ' ') return ' ';
-          return chars[Math.floor(Math.random() * chars.length)];
-        }).join('');
-        setTitleText(glitched);
-        glitchStep++;
-      }
-    }, glitchIntervalTime);
-
-    // Phase 2: Steady State (h/t toggle)
+    let isMounted = true;
     let steadyInterval: NodeJS.Timeout;
+
+    const runAnimation = async () => {
+      // Loop through each character index to "lock" it in
+      for (let i = 0; i <= targetText.length; i++) {
+        if (!isMounted) return;
+
+        // Easing logic: Start fast (30ms), slow down as we progress
+        // Using a simple linear increase for the "slow down" effect
+        const stepDuration = Math.max(30, 30 + (i * 15));
+
+        // Scramble the "unlocked" characters for a few frames before locking the current index
+        const scrambles = 3;
+        for (let s = 0; s < scrambles; s++) {
+          if (!isMounted) return;
+
+          const scrambledText = targetText.split('').map((char, index) => {
+            if (index < i) return char; // Locked characters
+            if (char === ' ') return ' ';
+            // Randomize remainder
+            return chars[Math.floor(Math.random() * chars.length)];
+          }).join('');
+
+          setTitleText(scrambledText);
+          await new Promise(r => setTimeout(r, stepDuration / scrambles));
+        }
+      }
+
+      // Ensure final state is clean
+      if (isMounted) {
+        setTitleText(targetText);
+        startSteadyState();
+      }
+    };
+
     const startSteadyState = () => {
-      let isT = false;
+      let isGlitched = false;
       steadyInterval = setInterval(() => {
-        isT = !isT;
-        // Toggle only the last letter of Insight: "Insight" vs "Insigt"
-        setTitleText(isT ? "Insigt Engine" : "Insigh Engine");
+        if (!isMounted) return;
+        isGlitched = !isGlitched;
+        // Toggle the last letter of "Insight" to preserve the "witching" effect
+        // "Insigt Engine" <-> "Insigh Engine"
+        setTitleText(isGlitched ? "Insigh Engine" : "Insigt Engine");
       }, 2000);
     };
 
+    runAnimation();
+
     return () => {
-      clearInterval(glitchInterval);
+      isMounted = false;
       if (steadyInterval) clearInterval(steadyInterval);
     };
   }, []);
