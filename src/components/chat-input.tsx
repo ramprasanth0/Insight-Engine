@@ -15,7 +15,7 @@ export function ChatInput({ input, setInput, handleSendQuery, isLoading, classNa
     return (
         <form onSubmit={handleSendQuery} className={`flex w-full gap-2 ${className}`}>
             <Input
-                placeholder="Ask anything about NextJs..."
+                placeholder="Ask away!..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 disabled={isLoading}

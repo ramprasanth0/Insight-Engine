@@ -39,8 +39,8 @@ export function ChatBox({ messages, isLoading }: ChatBoxProps) {
                             key={i}
                             className={`flex gap-3 ${m.role === "user" ? "flex-row-reverse" : ""}`}
                         >
-                            <Avatar className={m.role === "user" ? "bg-primary" : "bg-muted"}>
-                                <AvatarFallback className="text-primary-foreground">
+                            <Avatar className="bg-secondary">
+                                <AvatarFallback className="text-secondary-foreground">
                                     {m.role === "user" ? <User size={18} /> : <Bot size={18} />}
                                 </AvatarFallback>
                             </Avatar>
