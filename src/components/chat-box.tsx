@@ -1,4 +1,6 @@
 import { useRef, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { User, Bot, Loader2 } from "lucide-react";
@@ -47,7 +49,17 @@ export function ChatBox({ messages, isLoading }: ChatBoxProps) {
                                 ? "bg-primary text-primary-foreground rounded-tr-none"
                                 : "bg-muted text-muted-foreground border border-border rounded-tl-none"
                                 }`}>
-                                {m.content}
+                                <div className="prose prose-sm max-w-none break-words prose-invert">
+                                    <ReactMarkdown
+                                        remarkPlugins={[remarkGfm]}                                         // Render Markdown with GitHub Flavored support and Tailwind typography for automated styling.
+                                        components={{
+                                            // Optional: Custom renderers can be defined here if we need specific styling for code blocks,
+                                            // links, or images that deviates from the default 'prose' styles.
+                                        }}
+                                    >
+                                        {m.content}
+                                    </ReactMarkdown>
+                                </div>
                             </div>
                         </div>
                     ))}

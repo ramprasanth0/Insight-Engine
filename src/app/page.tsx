@@ -14,6 +14,7 @@ export default function ChatPage() {
 
   const [titleText, setTitleText] = useState("Insight Engine");
 
+  // "Digital Decoding" effect: progressively locks characters to reveal the final title.
   useEffect(() => {
     const targetText = "Insight Engine";
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
