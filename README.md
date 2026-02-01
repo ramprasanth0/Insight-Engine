@@ -4,25 +4,40 @@
 
 ---
 
-## 🏗️ Architecture
+## 👀 Preview
 
-The project is split into two distinct workflows to ensure modularity and scalability:
+Experience a premium, responsive interface featuring a Cyberpunk-inspired aesthetic with dynamic glow effects and dot-matrix typography.
 
-* **Ingestion Engine (Offline):** A robust Node.js pipeline that reads, chunks, and indexes data.
-* **Query Engine (Online):** A Next.js API that retrieves context and generates answers in real-time.
-* **Architecture Diagram**:
-
-    ![Architecture Diagram](project%20info/Workflow.png)
+| **Home Interface** | **Chat Experience** |
+| :---: | :---: |
+| ![Home Interface](public/screenshots/home-preview.png) | ![Chat Experience](public/screenshots/chat-preview.png) |
 
 ---
 
-## 🚀 Features
+## 🚀 Key Features
 
-* **Smart Ingestion:** Uses glob for recursive file discovery across your documentation folders.
-* **Context-Aware Splitting:** Utilizes LangChain recursive splitters to keep related text segments together.
-* **Parallel Processing & Throttling:** Implements a custom "Batch & Throttle" system to respect Gemini Free Tier limits (100 RPM) while maintaining high ingestion speed.
-* **Semantic Search:** Employs Pinecone namespaces and Cosine Similarity to find the most relevant documentation chunks.
-* **Type Safety:** Fully typed with TypeScript (Strict Mode) to eliminate runtime errors and improve developer experience.
+### 🎨 UI & Experience
+*   **Premium Aesthetic**: Implements a "Cyberpunk" inspired dark mode with dynamic blue glow effects (`box-shadow` transitions).
+*   **Dot-Matrix Typography**: Features a custom-styled "Insight Engine" title using dot-matrix font patterns for a unique retro-futuristic look.
+*   **Responsive Layout**: The chat interface dynamically adjusts—starting centered and transitioning to a chat-history view upon interaction.
+*   **Interactive Components**: Built with `shadcn/ui` components for accessible and smooth interactions (Inputs, Cards, Avatars).
+
+### 🤖 Intelligent Core
+*   **Smart Ingestion**: Uses recursive globbing to discover documentation across project folders.
+*   **Context-Aware Splitting**: Utilizes LangChain recursive splitters to maintain semantic integrity of text segments.
+*   **Parallel Processing**: Implements a "Batch & Throttle" system to respect Gemini Free Tier limits (100 RPM) while ensuring fast ingestion.
+*   **Semantic Search**: Leverages Pinecone serverless vectors and Cosine Similarity for precise retrieval.
+
+---
+
+## 🏗️ Architecture
+
+The project is split into two distinct workflows:
+
+1.  **Ingestion Engine (Offline)**: A robust Node.js pipeline (`scripts/ingest.ts`) that reads, chunks, and indexes data.
+2.  **Query Engine (Online)**: A Next.js API that retrieves context and generates answers in real-time.
+
+![Architecture Diagram](project%20info/Workflow.png)
 
 ---
 
@@ -30,12 +45,29 @@ The project is split into two distinct workflows to ensure modularity and scalab
 
 | Category | Technology |
 | :--- | :--- |
-| **Framework** | Next.js 15 (App Router) |
-| **Language** | TypeScript |
-| **Embeddings** | Gemini `text-embedding-004` (768 dimensions) |
-| **LLM** | Gemini 2.0-flash (Streaming) |
+| **Framework** | Next.js 16 (App Router) |
+| **Styling** | Tailwind CSS v4, `shadcn/ui`, `lucide-react` |
+| **Language** | TypeScript (Strict Mode) |
+| **AI Models** | Gemini 2.0-flash (Generation), `text-embedding-004` (Embeddings) |
 | **Vector DB** | Pinecone (Serverless) |
 | **Utilities** | `dotenv`, `glob`, `@langchain/textsplitters` |
+
+---
+
+## 📂 Project Structure
+
+```bash
+├── src
+│   ├── app          # Next.js App Router pages
+│   ├── components   # UI Components (shadcn/ui + custom)
+│   └── lib          # Utility functions (utils.ts)
+├── scripts
+│   ├── ingest.ts    # Documentation ingestion pipeline
+│   └── test-chat.ts # CLI script for testing chat API
+├── public
+│   └── screenshots  # Preview images
+└── docs             # Place your .md/.mdx documentation here
+```
 
 ---
 
@@ -43,52 +75,54 @@ The project is split into two distinct workflows to ensure modularity and scalab
 
 ### 1. Clone & Install
 ```bash
-git clone [https://github.com/your-username/insight-engine.git](https://github.com/your-username/insight-engine.git)
+git clone https://github.com/your-username/insight-engine.git
 cd insight-engine
 npm install
+```
 
-2.  **Environment Secrets**
-    Create a `.env.local` file in the root:
-    ```bash
-    # Google AI Studio (Gemini)
-    GEMINI_API_KEY=BIzaSy...
+### 2. Environment Secrets
+Create a `.env.local` file in the root:
+```bash
+# Google AI Studio (Gemini)
+GEMINI_API_KEY=BIzaSy...
 
-    # Pinecone Vector DB
-    PINECONE_API_KEY=lcvk_...
-    ```
+# Pinecone Vector DB
+PINECONE_API_KEY=lcvk_...
+```
 
-3.  **Prepare Data**
-    Place your `.md` or `.mdx` files inside a `docs/` folder at the root.
+### 3. Prepare Data
+Place your `.md` or `.mdx` files inside a `docs/` folder at the root.
+
+---
+
+## 🏃‍♂️ How to Run
+
+### Ingestion (Offline)
+Hydrate your vector database with your documentation.
+```bash
+npx tsx scripts/ingest.ts
+```
+
+### Development Server (Online)
+Start the web application.
+```bash
+npm run dev
+```
+Visit `http://localhost:3000` to interact with the Insight Engine.
+
+### Testing
+To test the chat API directly without the UI:
+```bash
+npx tsx scripts/test-chat.ts
 ```
 
 ---
 
-## 🏃‍♂️ How to Run Ingestion
+## 💬 RAG Pipeline
+**Grounded Retrieval Process**:
+1.  **Vectorization**: User input is embedded (`text-embedding-004`).
+2.  **Search**: Queries Pinecone `nextjs-docs` namespace.
+3.  **Grounding**: Relevant chunks injected into System Prompt.
+4.  **Generation**: Gemini 2.0-flash streams the answer.
 
-The Ingestion Engine is a standalone script that hydrates your vector database.It includes built-in rate-limiting logic to stay within the Gemini free tier quotas.
-```bash 
-npx tsx scripts/ingest.ts 
-```
-Key Ingestion Steps:
-* **Discover**: Locate files using recursive globbing.
-* **Chunk**: Split documents into $1000$-character segments with $200$-character overlap.
-* **Embed**: Convert text to $768$-dimensional vectors via Gemini.
-* **Upsert**: Store vectors in the nextjs-docs namespace in Pinecone.
-
-* **Ingestion Workflow Diagram**:
-
-    ![Architecture Diagram](project%20info/Ingestion%20Engine.png)
-
----
-
-## 💬 Query & Chat Logic
-When a user asks a question, the application follows a strict **grounded retrieval process**:
-1. Query Vectorization: The user's input is embedded using the same text-embedding-004 model.
-2. Namespace Search: The engine queries the nextjs-docs namespace in Pinecone.
-3. Prompt Grounding: Relevant chunks are injected into a System Prompt that instructs the AI to only answer based on the provided context.
-4. Streaming: The response is piped back to the user via a ReadableStream for a real-time chat experience.
-*    Note: This architecture ensures that if the information isn't in your documentation, the AI won't make it up, effectively eliminating hallucinations.
-
-* **RAG Pipleine Overview**:
-
-    ![Architecture Diagram](project%20info/rag-pipeline.png)
+![RAG Pipeline](project%20info/rag-pipeline.png)
