@@ -140,12 +140,12 @@ async function main() {
     console.log("⏳ Waiting for index to initialize...");
     await new Promise(resolve => setTimeout(resolve, 60000));
 
-    // Upsert data
+    // Upsert data (nextjs-docs namespace,reactjs-docs namespace)
     const UPSERT_BATCH_SIZE = 100;
     for (let i = 0; i < vectorDocs.length; i += UPSERT_BATCH_SIZE) {
         const batch = vectorDocs.slice(i, i + UPSERT_BATCH_SIZE);
         console.log(`Upserting batch ${i / UPSERT_BATCH_SIZE + 1}...`);
-        await index.namespace("nextjs-docs").upsert(batch)
+        await index.namespace("reactjs-docs").upsert(batch)
     }
     console.log(`✅ Upserted ${vectorDocs.length} vectors!`);
 
