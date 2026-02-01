@@ -12,14 +12,13 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const [titleText, setTitleText] = useState("Insigt Engine");
+  const [titleText, setTitleText] = useState("Insight Engine");
 
   useEffect(() => {
-    const targetText = "Insigt Engine";
+    const targetText = "Insight Engine";
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
 
     let isMounted = true;
-    let steadyInterval: NodeJS.Timeout;
 
     const runAnimation = async () => {
       // Loop through each character index to "lock" it in
@@ -50,26 +49,13 @@ export default function ChatPage() {
       // Ensure final state is clean
       if (isMounted) {
         setTitleText(targetText);
-        startSteadyState();
       }
-    };
-
-    const startSteadyState = () => {
-      let isGlitched = false;
-      steadyInterval = setInterval(() => {
-        if (!isMounted) return;
-        isGlitched = !isGlitched;
-        // Toggle the last letter of "Insight" to preserve the "witching" effect
-        // "Insigt Engine" <-> "Insigh Engine"
-        setTitleText(isGlitched ? "Insigh Engine" : "Insigt Engine");
-      }, 2000);
     };
 
     runAnimation();
 
     return () => {
       isMounted = false;
-      if (steadyInterval) clearInterval(steadyInterval);
     };
   }, []);
 
