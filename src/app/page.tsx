@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { ChatBox, Message } from "@/components/chat-box";
 import { ChatInput } from "@/components/chat-input";
-import { Bot, Sparkles, Globe } from "lucide-react";
+import { Bot, Sparkles, Globe, Sun, Moon } from "lucide-react";
 import Image from "next/image";
 import { Card, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import AppIcon from "./icon.png";
@@ -21,6 +21,18 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedNamespaces, setSelectedNamespaces] = useState<string[]>([]);
   const [webSearch, setWebSearch] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+
+  // Theme toggle effect
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.remove('light');
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
+    }
+  }, [isDarkMode]);
 
   const [titleText, setTitleText] = useState("Insight Engine");
 
@@ -162,7 +174,31 @@ export default function ChatPage() {
   );
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-background">
+    <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-background relative">
+      {/* Dark Mode Toggle - Top Right */}
+      <div className="absolute top-4 right-4">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center">
+                <Switch
+                  id="theme-toggle"
+                  checked={isDarkMode}
+                  onCheckedChange={setIsDarkMode}
+                  className="h-6 w-10 bg-gray-200 data-[state=checked]:bg-slate-700 border-0 shadow-[inset_2px_2px_4px_rgba(0,0,0,0.2),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]"
+                  thumbClassName="h-5 w-5 shadow-[2px_2px_4px_rgba(0,0,0,0.2)] data-[state=checked]:translate-x-[18px] data-[state=unchecked]:translate-x-[2px]"
+                  thumbContent={
+                    isDarkMode ? <Moon size={12} className="text-slate-300" /> : <Sun size={12} className="text-amber-500" />
+                  }
+                />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
       {messages.length === 0 ? (
         // INITIAL STATE: Centered Layout
         <div className="flex flex-col items-center justify-center w-full max-w-2xl space-y-8 animate-in fade-in zoom-in duration-500">

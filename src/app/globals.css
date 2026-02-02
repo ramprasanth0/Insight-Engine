@@ -132,6 +132,29 @@
   --sidebar-ring: var(--ring);
 }
 
+.light {
+  /* Light mode - inverted colors for a bright theme */
+  --background: #f8f6fc;
+  --foreground: #1a1025;
+  --card: #ffffff;
+  --card-foreground: #1a1025;
+  --popover: #ffffff;
+  --popover-foreground: #1a1025;
+  --primary: #7c3aed;
+  --primary-foreground: #ffffff;
+  --secondary: #e9e3f5;
+  --secondary-foreground: #4c1d95;
+  --muted: #f3f0f7;
+  --muted-foreground: #6b5b7a;
+  --accent: #7c3aed;
+  --accent-foreground: #ffffff;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #d4c8e8;
+  --input: #f3f0f7;
+  --ring: #7c3aed;
+}
+
 .dark {
   /* Dark mode relies on the same variables since this constitutes a dark theme by default */
   --background: var(--base-100);
