@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'; //force dynamic caching
 
 import { gemini } from "@/lib/gemini";
 import { pinecone } from "@/lib/pinecone";
+import { tavily_api } from "@/lib/tavily";
 import { error } from "console";
 import { NextResponse } from "next/server";
 
@@ -9,7 +10,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
     try {
-        const { messages, namespaces } = await req.json();
+        const { messages, namespaces, webSearch } = await req.json();
         const lastMessage = messages[messages.length - 1].content;
 
         console.log(`✅ User Query received: "${lastMessage}"`);
@@ -55,21 +56,37 @@ export async function POST(req: Request) {
         const allMatches = queryResponses.flatMap(response => response.matches || []);
 
         // Build context from the aggregated search results
-        const context = allMatches
+        const docsContext = allMatches
             .map((match) => match.metadata?.text)
             .filter(Boolean)
             .join("\n\n");
 
-        console.log(`✅ Context built with ${allMatches.length} matches`);
+        console.log(`✅ Context built with ${allMatches.length} matches - Docs context`);
+
+        let webSearchContext = "";
+        if (webSearch) {
+            //Get Tavily context (Web search context)
+            const tavilyResponses = await tavily_api.search(
+                lastMessage, {
+                max_results: 5
+            }
+            )
+            webSearchContext = tavilyResponses.results.map((res) => res.content).join("\n\n")
+
+            console.log(`✅ Context built with ${tavilyResponses.results.length} matches - Tavily (Web search) context`);
+        }
+
+        //Build final Context (Database search + Web search)
+        const finalContext = `documentation context:${docsContext}/n/n web search context:${webSearchContext}/n/n `
 
         //Set Up Gemini Stream
         const systemPrompt = `
-            You are the "Insight Engine," a helpful and precise technical assistant for the provided documentation.
+            You are the "Insight Engine," a helpful and precise technical assistant for the provided documentation and web search results.
 
             Your mission: Answer the user's question using ONLY the provided [Context] block.
 
             STRICT RULES:
-            1. **Context Grounding**: If the answer is not contained within the [Context], you must explicitly state: "I'm sorry, but I don't have enough information in the current documentation to answer that." 
+            1. **Context Grounding**: If the answer is not contained within the [Context], you must explicitly state: "I'm sorry, but I don't have enough information in the current scope to answer your question." 
             2. **No Hallucinations**: Do not use outside knowledge or make up features that don't exist in the provided text.
             3. **Tone**: Be concise, professional, and use Markdown for code blocks or bolding.
             4. **Source Attribution**: If the metadata includes a "source" filename, mention it at the end of your answer (e.g., "Source: docs/routing/intro.mdx").
@@ -78,7 +95,7 @@ export async function POST(req: Request) {
         const response = await client.models.generateContentStream({
             model: 'gemini-2.5-flash',
             contents: [
-                { role: 'user', parts: [{ text: `Context: ${context}\n\nQuestion: ${lastMessage}` }] }
+                { role: 'user', parts: [{ text: `Context: ${finalContext}\n\nQuestion: ${lastMessage}` }] }
             ],
             config: {
                 systemInstruction: systemPrompt,

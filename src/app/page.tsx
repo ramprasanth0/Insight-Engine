@@ -13,6 +13,7 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [selectedNamespaces, setSelectedNamespaces] = useState<string[]>([]);
+  const [webSearch, setWebSearch] = useState(false);
 
   const [titleText, setTitleText] = useState("Insight Engine");
 
@@ -80,7 +81,8 @@ export default function ChatPage() {
         },
         body: JSON.stringify({
           messages: [...messages, { role: "user", content: userMessage }],
-          namespaces: selectedNamespaces
+          namespaces: selectedNamespaces,
+          webSearch: webSearch
         }),
       });
 
@@ -183,6 +185,8 @@ export default function ChatPage() {
                 setInput={setInput}
                 handleSendQuery={handleSendQuery}
                 isLoading={isLoading}
+                webSearch={webSearch}
+                setWebSearch={setWebSearch}
                 className="p-2"
               />
             </div>
@@ -222,6 +226,8 @@ export default function ChatPage() {
                 setInput={setInput}
                 handleSendQuery={handleSendQuery}
                 isLoading={isLoading}
+                webSearch={webSearch}
+                setWebSearch={setWebSearch}
               />
             </div>
           </CardFooter>
