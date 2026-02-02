@@ -6,27 +6,39 @@
 
 ## 👀 Preview
 
-Experience a premium, responsive interface featuring a Cyberpunk-inspired aesthetic with dynamic glow effects and dot-matrix typography.
+![Demo](public/screenshots/demo.webp)
 
-| **Home Interface** | **Chat Experience** |
+### Dark Mode
+| **Landing** | **Chat** |
 | :---: | :---: |
-| ![Home Interface](public/screenshots/home-preview.png) | ![Chat Experience](public/screenshots/chat-preview.png) |
+| ![Dark Landing](public/screenshots/dark-landing.png) | ![Dark Chat](public/screenshots/chat-preview.png) |
+
+### Light Mode
+| **Landing** | **Chat** |
+| :---: | :---: |
+| ![Light Landing](public/screenshots/light-landing.png) | ![Light Chat](public/screenshots/chat-preview.png) |
 
 ---
 
 ## 🚀 Key Features
 
 ### 🎨 UI & Experience
-*   **Premium Aesthetic**: Implements a "Cyberpunk" inspired dark mode with dynamic blue glow effects (`box-shadow` transitions).
-*   **Dot-Matrix Typography**: Features a custom-styled "Insight Engine" title using dot-matrix font patterns for a unique retro-futuristic look.
-*   **Responsive Layout**: The chat interface dynamically adjusts—starting centered and transitioning to a chat-history view upon interaction.
-*   **Interactive Components**: Built with `shadcn/ui` components for accessible and smooth interactions (Inputs, Cards, Avatars).
+- **Dark/Light Theme Toggle** - Switch themes with the toggle in the top-right corner
+- **Sound Toggle** - Mute/unmute UI sounds (future feature)
+- **Premium Aesthetic** - Cyberpunk-inspired design with dynamic glow effects
+- **Dot-Matrix Typography** - Custom "Digital Decoding" title animation
+- **Responsive Layout** - Centered initial view, transitioning to chat-history on interaction
+- **Interactive Components** - Built with `shadcn/ui` for accessible, smooth interactions
+
+### 🔍 Search Controls
+- **Namespace Selection** - Filter by Next.js or React.js documentation
+- **Web Search Toggle** - Enable Tavily web search for broader context
 
 ### 🤖 Intelligent Core
-*   **Smart Ingestion**: Uses recursive globbing to discover documentation across project folders.
-*   **Context-Aware Splitting**: Utilizes LangChain recursive splitters to maintain semantic integrity of text segments.
-*   **Parallel Processing**: Implements a "Batch & Throttle" system to respect Gemini Free Tier limits (100 RPM) while ensuring fast ingestion.
-*   **Semantic Search**: Leverages Pinecone serverless vectors and Cosine Similarity for precise retrieval.
+- **Smart Ingestion** - Recursive globbing to discover documentation
+- **Context-Aware Splitting** - LangChain recursive splitters for semantic integrity
+- **Parallel Processing** - Batch & Throttle system respecting Gemini Free Tier limits (100 RPM)
+- **Semantic Search** - Pinecone serverless vectors with Cosine Similarity
 
 ---
 
@@ -34,8 +46,8 @@ Experience a premium, responsive interface featuring a Cyberpunk-inspired aesthe
 
 The project is split into two distinct workflows:
 
-1.  **Ingestion Engine (Offline)**: A robust Node.js pipeline (`scripts/ingest.ts`) that reads, chunks, and indexes data.
-2.  **Query Engine (Online)**: A Next.js API that retrieves context and generates answers in real-time.
+1. **Ingestion Engine (Offline)** - Node.js pipeline (`scripts/ingest.ts`) that reads, chunks, and indexes data
+2. **Query Engine (Online)** - Next.js API that retrieves context and generates answers in real-time
 
 ![Architecture Diagram](project%20info/Workflow.png)
 
@@ -50,6 +62,7 @@ The project is split into two distinct workflows:
 | **Language** | TypeScript (Strict Mode) |
 | **AI Models** | Gemini 2.0-flash (Generation), `text-embedding-004` (Embeddings) |
 | **Vector DB** | Pinecone (Serverless) |
+| **Web Search** | Tavily API |
 | **Utilities** | `dotenv`, `glob`, `@langchain/textsplitters` |
 
 ---
@@ -58,15 +71,22 @@ The project is split into two distinct workflows:
 
 ```bash
 ├── src
-│   ├── app          # Next.js App Router pages
-│   ├── components   # UI Components (shadcn/ui + custom)
-│   └── lib          # Utility functions (utils.ts)
+│   ├── app              # Next.js App Router pages
+│   ├── components       # UI Components (shadcn/ui + custom)
+│   │   ├── top-controls.tsx      # Theme & mute toggles
+│   │   ├── namespace-buttons.tsx # Doc namespace selection
+│   │   ├── web-search-toggle.tsx # Web search toggle
+│   │   ├── chat-box.tsx          # Chat message display
+│   │   └── chat-input.tsx        # Input with send button
+│   ├── hooks            # Custom React hooks
+│   │   └── use-title-animation.ts # Digital decoding effect
+│   └── lib              # Utility functions & API clients
 ├── scripts
-│   ├── ingest.ts    # Documentation ingestion pipeline
-│   └── test-chat.ts # CLI script for testing chat API
+│   ├── ingest.ts        # Documentation ingestion pipeline
+│   └── test-chat.ts     # CLI script for testing chat API
 ├── public
-│   └── screenshots  # Preview images
-└── docs             # Place your .md/.mdx documentation here
+│   └── screenshots      # Preview images & demo
+└── docs                 # Place your .md/.mdx documentation here
 ```
 
 ---
@@ -84,10 +104,13 @@ npm install
 Create a `.env.local` file in the root:
 ```bash
 # Google AI Studio (Gemini)
-GEMINI_API_KEY=BIzaSy...
+GEMINI_API_KEY=AIzaSy...
 
 # Pinecone Vector DB
-PINECONE_API_KEY=lcvk_...
+PINECONE_API_KEY=pcsk_...
+
+# Tavily Web Search (optional)
+TAVILY_API_KEY=tvly-...
 ```
 
 ### 3. Prepare Data
@@ -108,7 +131,7 @@ Start the web application.
 ```bash
 npm run dev
 ```
-Visit `http://localhost:3000` to interact with the Insight Engine.
+Visit `http://localhost:3000` to interact with Insight Engine.
 
 ### Testing
 To test the chat API directly without the UI:
@@ -119,10 +142,29 @@ npx tsx scripts/test-chat.ts
 ---
 
 ## 💬 RAG Pipeline
+
 **Grounded Retrieval Process**:
-1.  **Vectorization**: User input is embedded (`text-embedding-004`).
-2.  **Search**: Queries Pinecone `nextjs-docs` namespace.
-3.  **Grounding**: Relevant chunks injected into System Prompt.
-4.  **Generation**: Gemini 2.0-flash streams the answer.
+1. **Vectorization** - User input is embedded (`text-embedding-004`)
+2. **Search** - Queries Pinecone namespaces (nextjs-docs, reactjs-docs)
+3. **Web Search** - Optional Tavily search for additional context
+4. **Grounding** - Relevant chunks injected into System Prompt
+5. **Generation** - Gemini 2.0-flash streams the answer
 
 ![RAG Pipeline](project%20info/rag-pipeline.png)
+
+---
+
+## 🎛️ Controls
+
+| Control | Description |
+| :--- | :--- |
+| 🌙 **Theme Toggle** | Switch between dark and light mode |
+| 🔊 **Mute Toggle** | Mute/unmute UI sounds (placeholder) |
+| 🌐 **Web Search** | Enable Tavily web search for queries |
+| 📚 **Namespace Buttons** | Filter by Next.js or React.js docs |
+
+---
+
+## 📝 License
+
+MIT License - see [LICENSE](LICENSE) for details.
