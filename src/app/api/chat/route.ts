@@ -44,6 +44,8 @@ export async function POST(req: Request) {
                 includeMetadata: true
             })
         );
+        console.log(`✅ Searching namespace: ${targetNamespaces}`);
+
 
         //wait for all queries to complete
         const queryResponses = await Promise.all(queryPromises);
