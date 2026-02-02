@@ -2,11 +2,18 @@
 import { useState, useEffect } from "react";
 import { ChatBox, Message } from "@/components/chat-box";
 import { ChatInput } from "@/components/chat-input";
-import { Bot, Sparkles } from "lucide-react";
+import { Bot, Sparkles, Globe } from "lucide-react";
 import Image from "next/image";
 import { Card, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import AppIcon from "./icon.png";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -179,14 +186,35 @@ export default function ChatPage() {
 
           <div className="w-full shadow-lg rounded-xl overflow-hidden ring-1 ring-border/50">
             <div className="bg-card p-2">
-              <NamespaceButtons />
+              <div className="flex justify-between items-center mb-2 px-2">
+                <NamespaceButtons />
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center">
+                        <Switch
+                          id="web-search-mode"
+                          checked={webSearch}
+                          onCheckedChange={setWebSearch}
+                          className="h-6 w-10 bg-gray-200 data-[state=checked]:bg-blue-500 border-0 shadow-[inset_2px_2px_4px_rgba(0,0,0,0.2),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]"
+                          thumbClassName="h-5 w-5 shadow-[2px_2px_4px_rgba(0,0,0,0.2)] data-[state=checked]:translate-x-[18px] data-[state=unchecked]:translate-x-[4px]"
+                          thumbContent={
+                            <Globe size={14} className={`transition-colors ${webSearch ? "text-blue-500" : "text-gray-400"}`} />
+                          }
+                        />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Web search might make the answer less grounded</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
               <ChatInput
                 input={input}
                 setInput={setInput}
                 handleSendQuery={handleSendQuery}
                 isLoading={isLoading}
-                webSearch={webSearch}
-                setWebSearch={setWebSearch}
                 className="p-2"
               />
             </div>
@@ -220,14 +248,35 @@ export default function ChatPage() {
 
           <CardFooter className="flex flex-col p-4 bg-card border-t border-border">
             <div className="w-full">
-              <NamespaceButtons />
+              <div className="flex justify-between items-center mb-2">
+                <NamespaceButtons />
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center">
+                        <Switch
+                          id="web-search-mode-chat"
+                          checked={webSearch}
+                          onCheckedChange={setWebSearch}
+                          className="h-6 w-10 bg-gray-200 data-[state=checked]:bg-blue-500 border-0 shadow-[inset_2px_2px_4px_rgba(0,0,0,0.2),inset_-2px_-2px_4px_rgba(255,255,255,0.8)]"
+                          thumbClassName="h-5 w-5 shadow-[2px_2px_4px_rgba(0,0,0,0.2)] data-[state=checked]:translate-x-[18px] data-[state=unchecked]:translate-x-[4px]"
+                          thumbContent={
+                            <Globe size={14} className={`transition-colors ${webSearch ? "text-blue-500" : "text-gray-400"}`} />
+                          }
+                        />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Web search might make the answer less grounded</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
               <ChatInput
                 input={input}
                 setInput={setInput}
                 handleSendQuery={handleSendQuery}
                 isLoading={isLoading}
-                webSearch={webSearch}
-                setWebSearch={setWebSearch}
               />
             </div>
           </CardFooter>
