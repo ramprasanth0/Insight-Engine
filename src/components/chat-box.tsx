@@ -46,10 +46,10 @@ export function ChatBox({ messages, isLoading }: ChatBoxProps) {
                             </Avatar>
 
                             <div className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm shadow-sm ${m.role === "user"
-                                ? "bg-primary text-primary-foreground rounded-tr-none"
-                                : "bg-muted text-muted-foreground border border-border rounded-tl-none"
+                                ? "bg-primary text-white rounded-tr-none"
+                                : "bg-muted text-foreground border border-border rounded-tl-none"
                                 }`}>
-                                <div className="prose prose-sm max-w-none break-words prose-invert">
+                                <div className={`prose prose-sm max-w-none break-words ${m.role === "user" ? "[&_*]:text-white" : "dark:prose-invert"}`}>
                                     <ReactMarkdown
                                         remarkPlugins={[remarkGfm]}                                         // Render Markdown with GitHub Flavored support and Tailwind typography for automated styling.
                                         components={{
