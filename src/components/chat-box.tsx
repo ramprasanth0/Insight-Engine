@@ -71,7 +71,7 @@ export function ChatBox({ messages, isLoading }: ChatBoxProps) {
                     ) && (
                             <div className="flex gap-2 items-center text-muted-foreground text-xs ml-12">
                                 <Loader2 size={14} className="animate-spin" />
-                                Searching documents...
+                                Searching...
                             </div>
                         )}
                 </div>

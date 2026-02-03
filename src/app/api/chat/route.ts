@@ -77,7 +77,7 @@ export async function POST(req: Request) {
         }
 
         //Build final Context (Database search + Web search)
-        const finalContext = `documentation context:${docsContext}/n/n web search context:${webSearchContext}/n/n `
+        const finalContext = `documentation context:${docsContext}\n\n web search context:${webSearchContext}\n\n `
 
         //Set Up Gemini Stream
         const systemPrompt = `
@@ -91,32 +91,84 @@ export async function POST(req: Request) {
             3. **Tone**: Be concise, professional, and use Markdown for code blocks or bolding.
             4. **Source Attribution**: If the metadata includes a "source" filename, mention it at the end of your answer (e.g., "Source: docs/routing/intro.mdx").
         `.trim();
+
         //stream response from gemini (using context)
-        const response = await client.models.generateContentStream({
-            model: 'gemini-2.5-flash',
-            contents: [
-                { role: 'user', parts: [{ text: `Context: ${finalContext}\n\nQuestion: ${lastMessage}` }] }
-            ],
-            config: {
-                systemInstruction: systemPrompt,
-                temperature: 0.7,
+        //model fallback chain - tries each model in order until one works
+        const modelsToTry = [
+            "gemini-3-flash-preview",                      // primary - latest and fastest (20 RPD)
+            "gemini-2.5-flash",                            // secondary - stable fallback (20 RPD)
+            "gemma-3-27b-it",                              // tertiary - open weights, high limits (14k RPD)
+        ];
+
+        //response declared outside loop so it's accessible after loop ends
+        let response;
+
+        //loop through models until one succeeds (rate limit fallback pattern)
+        for (const modelId of modelsToTry) {
+            try {
+                //gemma 3 (open weights model) does not support systemInstruction
+                //gemma models require system prompt to be part of the user message
+                if (modelId === "gemma-3-27b-it") {
+                    response = await client.models.generateContentStream({
+                        model: modelId,
+                        contents: [
+                            //combine system prompt + context + question into single user message
+                            { role: 'user', parts: [{ text: `${systemPrompt}\n\nContext: ${finalContext}\n\nQuestion: ${lastMessage}` }] }
+                        ],
+                        config: {
+                            temperature: 0.7, //controls randomness (0 = deterministic, 1 = creative)
+                        }
+                    });
+                } else {
+                    //gemini models support systemInstruction natively
+                    response = await client.models.generateContentStream({
+                        model: modelId,
+                        contents: [
+                            { role: 'user', parts: [{ text: `Context: ${finalContext}\n\nQuestion: ${lastMessage}` }] }
+                        ],
+                        config: {
+                            systemInstruction: systemPrompt, //passed separately for gemini models
+                            temperature: 0.7,
+                        }
+                    });
+                }
+                console.log(`✅ Using model: ${modelId}`);
+                break; //success! exit the loop, no need to try other models
+            } catch (error: any) {
+                //only continue to next model if rate limited (429), otherwise throw
+                if (error.status !== 429) throw error;
+                console.log(`⚠️ Model ${modelId} rate limited, trying next...`);
+                //loop continues to try next model in the array
             }
-        })
-        //stream the response to the frontend --> (Creating the Pipe (The ReadableStream))
+        }
+
+        //safety check - if all models failed (all rate limited), throw error
+        if (!response) {
+            throw new Error("All models are rate limited. Please try again later.");
+        }
+        console.log("✅ Response from Gemini received");
+
+        //stream the response to the frontend
+        //ReadableStream creates a "pipe" that sends data chunk by chunk
         const streamResponse = new ReadableStream({
+            //start() is called when the stream is first created
             async start(controller) {
+                //encoder converts strings to bytes (required for streaming)
                 const encoder = new TextEncoder();
                 try {
+                    //iterate through each chunk from gemini's stream
                     for await (const chunk of response) {
-                        // Get the text delta from the current chunk
+                        //extract the text content from the chunk
                         const chunkText = chunk.text
                         if (chunkText) {
-                            // Send the raw text chunk to the frontend(string into bytes)
+                            //enqueue = push data into the stream (string -> bytes)
                             controller.enqueue(encoder.encode(chunkText))
                         }
                     }
-                    controller.close();    // Telling the browser we're done
+                    //close the stream when all chunks are sent
+                    controller.close();
                 } catch (error) {
+                    //if something goes wrong, signal error to the frontend
                     controller.error(error);
                 }
             }
