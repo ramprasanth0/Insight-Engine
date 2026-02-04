@@ -35,21 +35,51 @@
 - **Web Search Toggle** - Enable Tavily web search for broader context
 
 ### 🤖 Intelligent Core
+- **Agentic Tool Calling** - Autonomous decision making with Google's `mcpToTool` integration
+- **Robust Failover** - Automatic retry logic handling rate limits (switches models on 429 errors)
 - **Smart Ingestion** - Recursive globbing to discover documentation
 - **Context-Aware Splitting** - LangChain recursive splitters for semantic integrity
-- **Parallel Processing** - Batch & Throttle system respecting Gemini Free Tier limits (100 RPM)
+- **Parallel Processing** - Batch & Throttle system respecting Gemini Free Tier limits
 - **Semantic Search** - Pinecone serverless vectors with Cosine Similarity
 
 ---
 
 ## 🏗️ Architecture
 
-The project is split into two distinct workflows:
+The system uses a **Hybrid Agentic Architecture** combining offline vectorization with an online autonomous agent.
 
-1. **Ingestion Engine (Offline)** - Node.js pipeline (`scripts/ingest.ts`) that reads, chunks, and indexes data
-2. **Query Engine (Online)** - Next.js API that retrieves context and generates answers in real-time
+```mermaid
+graph TD
+    subgraph "Offline: Ingestion Engine"
+        Docs[Markdown Docs] -->|Glob| Splitter[Recursive Splitter]
+        Splitter -->|Chunks| Embed[Gemini Embeddings]
+        Embed -->|Vectors| PineconeDB[(Pinecone Vector DB)]
+    end
 
-![Architecture Diagram](project%20info/Workflow.png)
+    subgraph "Online: Query Engine"
+        User[User Query] -->|POST /api/chat| Agent[Gemini Agent]
+        
+        %% RAG Flow
+        Agent -->|1. Retrieve| PineconeDB
+        PineconeDB -->|Context| Agent
+        
+        %% Agentic Flow
+        Agent -->|2. Decide| Decision{Need Web Info?}
+        Decision -->|Yes| MCP[MCP Client]
+        MCP -->|Call Tool| Tavily[Tavily Search API]
+        Tavily -->|Results| MCP
+        MCP -->|Context| Agent
+        Decision -- No --> Answer
+        
+        %% Response
+        Agent -->|3. Synthesize| Answer[Final Response]
+        Answer -->|Stream| User
+    end
+    
+    style Agent fill:#8e2de2,stroke:#333,stroke-width:2px,color:#fff
+    style MCP fill:#f953c6,stroke:#333,stroke-width:2px,color:#fff
+    style PineconeDB fill:#00b09b,stroke:#333,color:#fff
+```
 
 ---
 
@@ -60,9 +90,10 @@ The project is split into two distinct workflows:
 | **Framework** | Next.js 16 (App Router) |
 | **Styling** | Tailwind CSS v4, `shadcn/ui`, `lucide-react` |
 | **Language** | TypeScript (Strict Mode) |
-| **AI Models** | Gemini 2.0-flash (Generation), `text-embedding-004` (Embeddings) |
+| **AI Models** | Gemini 2.0-flash (Agentic), `text-embedding-004` (Embeddings) |
 | **Vector DB** | Pinecone (Serverless) |
-| **Web Search** | Tavily API |
+| **Web Search** | Tavily API (via MCP) |
+| **Agent Tools** | `@modelcontextprotocol/sdk`, Google GenAI `mcpToTool` |
 | **Utilities** | `dotenv`, `glob`, `@langchain/textsplitters` |
 
 ---
@@ -143,12 +174,13 @@ npx tsx scripts/test-chat.ts
 
 ## 💬 RAG Pipeline
 
-**Grounded Retrieval Process**:
+**Agentic RAG Process**:
 1. **Vectorization** - User input is embedded (`text-embedding-004`)
-2. **Search** - Queries Pinecone namespaces (nextjs-docs, reactjs-docs)
-3. **Web Search** - Optional Tavily search for additional context
-4. **Grounding** - Relevant chunks injected into System Prompt
-5. **Generation** - Gemini 2.0-flash streams the answer
+2. **Retrieval** - Queries Pinecone namespaces for documentation context
+3. **Agentic Loop** - Gemini analyzes context and decides if web search is needed
+4. **Tool Execution** - If needed, calls `tavily_search` via MCP to fetch real-time info
+5. **Synthesis** - Combines docs + web info to generate grounded answer
+6. **Streaming** - Response is streamed token-by-token to the UI
 
 ![RAG Pipeline](project%20info/rag-pipeline.png)
 

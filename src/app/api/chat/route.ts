@@ -3,10 +3,10 @@
 export const dynamic = 'force-dynamic'; //force dynamic caching
 
 import { gemini } from "@/lib/gemini";
+import { mcpToTool } from "@google/genai";
 import { pinecone } from "@/lib/pinecone";
 import { tavily_api } from "@/lib/tavily";
 import { getMCPClient } from "@/lib/mcp";
-import { error } from "console";
 import { NextResponse } from "next/server";
 
 //get user request
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
         })
         const queryVector = embeddingResponse.embeddings?.[0].values
         if (!queryVector) {
-            throw (error)
+            throw new Error("Failed to generate embedding")
         }
         console.log("✅ Query Vector created");
 
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
                 includeMetadata: true
             })
         );
-        console.log(`✅ Searching namespace: ${targetNamespaces}`);
+        console.log(`🔍 Searching namespace: ${targetNamespaces}`);
 
 
         //wait for all queries to complete
@@ -66,6 +66,7 @@ export async function POST(req: Request) {
 
         console.log(`✅ Context built with ${allMatches.length} matches - Docs context`);
 
+
         ///==================== OPTION A: Direct Tavily API (COMMENTED OUT) ====================///
         //uncomment this section and comment out MCP section below to use direct API
         // let webSearchContext = "";
@@ -80,38 +81,62 @@ export async function POST(req: Request) {
         // }
         ///==================== END OPTION A ====================///
 
+
         ///==================== OPTION B: MCP Tool Calling (ACTIVE) ====================///
-        //Get Tavily context (Web search context) via MCP - direct tool call
-        //since user controls when to search via toggle, we call the tool directly
+        //Agentic flow using mcpToTool() - Gemini SDK's built-in MCP integration
+        //This automatically converts MCP tools to Gemini format and handles execution
         let mcpWebSearchContext = "";
         if (webSearch) {
-            //get mcp client and discover available tools
+            //SETUP: Get MCP client (already connected)
             const mcpClient = await getMCPClient();
-            const { tools } = await mcpClient.listTools();
-            console.log(`✅ MCP tools discovered: ${tools.map(t => t.name).join(", ")}`);
+            console.log(`✅ MCP client connected`);
 
-            //find the search tool (tavily exposes "search" or "tavily_search")
-            const searchTool = tools.find(t => t.name.includes("search"));
-            if (searchTool) {
-                console.log(`✅ Calling MCP tool: ${searchTool.name}`);
+            try {
+                //GENERATE: Use mcpToTool() to integrate MCP tools with Gemini
+                //This handles tool conversion and automatic function calling
+                //Retry logic for rate limits and model availability
+                const searchModels = [
+                    "gemini-3-flash-preview",           // primary - latest and fastest (20 RPD)
+                    "gemini-2.5-flash",                 // secondary - stable and reliable (15 RPD)
+                    "gemini-2.0-flash"                  // fallback - older but still works (15 RPD)
+                ];
 
-                //call the search tool directly with user's query
-                const toolResult = await mcpClient.callTool({
-                    name: searchTool.name,
-                    arguments: { query: lastMessage },
-                });
+                for (const model of searchModels) {
+                    try {
+                        console.log(`🔍 Attempting web search agent with model: ${model}`);
+                        const response = await client.models.generateContent({
+                            model: model,
+                            contents: `Search the web for information about: ${lastMessage}`,
+                            config: {
+                                tools: [mcpToTool(mcpClient)],
+                            },
+                        });
 
-                //extract text content from MCP response
-                //MCP returns: { content: [{ type: "text", text: "..." }, ...] }
-                const resultContent = toolResult.content as Array<{ type: string; text?: string }>;
-                mcpWebSearchContext = resultContent
-                    .filter(c => c.type === "text" && c.text)
-                    .map(c => c.text!)
-                    .join("\n\n");
+                        //extract the text response as web search context
+                        mcpWebSearchContext = response.text ?? "";
+                        console.log(`✅ MCP agentic flow complete using ${model}`);
+                        console.log(`✅ Web search context: ${mcpWebSearchContext}`);
 
-                console.log(`✅ MCP tool result received (${mcpWebSearchContext.length} chars)`);
-            } else {
-                console.log("⚠️ No search tool found in MCP tools");
+                        break; //success, exit retry loop
+                    } catch (error) {
+                        //handle rate limits (429) or other transient errors
+                        const status = error instanceof Error && 'status' in error ? (error as { status: number }).status : undefined;
+
+                        if (status === 429 || status === 503) {
+                            console.log(`⚠️ Web search model ${model} rate limited/unavailable (${status}), trying next...`);
+                            continue;
+                        }
+                        console.error(`❌ Web search error with ${model}:`, error);
+                        //if it's a validation error (400) it might be the schema issue again, but likely just a model error
+                        //we break here to avoid infinite loops on non-retriable errors, but could also continue
+                        //for now, let's allow trying other models even on other errors just in case
+                        continue;
+                    }
+                }
+            } finally {
+                //ensure connection is always closed
+                await mcpClient.close();
+                console.log(`🔒 MCP client connection closed`);
             }
         }
         ///==================== END OPTION B ====================///
@@ -138,7 +163,7 @@ export async function POST(req: Request) {
         const modelsToTry = [
             "gemini-3-flash-preview",                      // primary - latest and fastest (20 RPD)
             "gemini-2.5-flash",                            // secondary - stable fallback (20 RPD)
-            "gemma-3-27b-it",                              // tertiary - open weights, high limits (14k RPD)
+            "gemma-3-27b-it",                              // fallback - open weights, high limits (14k RPD)
         ];
 
         //response declared outside loop so it's accessible after loop ends

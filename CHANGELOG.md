@@ -2,6 +2,27 @@
 
 All notable changes to Insight Engine will be documented in this file.
 
+## [0.3.0] - 2026-02-04
+
+### 🚀 Major Improvements
+
+- **Full Agentic Flow** - Upgraded from manual tool calling to Google GenAI's `mcpToTool` integration.
+  - Gemini now autonomously decides when to search the web based on conversation context.
+  - Eliminated manual tool parsing logic for better reliability.
+
+- **Robust Retry Logic** - Added intelligent error handling for the agentic loop.
+  - Automatically retries on `429 Rate Limit` errors.
+  - Fallback chain: `gemini-3-flash-preview` → `gemini-2.5-flash` → `gemini-2.0-flash`.
+  - Ensures high availability even under load.
+
+### 📚 Documentation
+
+- **Architecture Diagram** - Added MermaidJS flow diagram illustrating the Hybrid Agentic Architecture.
+- **Tech Stack** - Updated with `@modelcontextprotocol/sdk` and Agentic capabilities.
+- **Demo** - Updated review video with latest agentic behavior.
+
+---
+
 ## [0.2.0] - 2026-02-04
 
 ### ✨ New Features
