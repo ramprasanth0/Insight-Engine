@@ -16,7 +16,7 @@
 ### Light Mode
 | **Landing** | **Chat** |
 | :---: | :---: |
-| ![Light Landing](public/screenshots/light-landing.png) | ![Light Chat](public/screenshots/lightchat-preview.png) |
+| ![Light Landing](public/screenshots/light-landing.png) | ![Light Chat](public/screenshots/light-chat-preview.png) |
 
 ---
 
