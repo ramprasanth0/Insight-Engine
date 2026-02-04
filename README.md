@@ -6,17 +6,17 @@
 
 ## 👀 Preview
 
-![Demo](public/screenshots/demo.webp)
+![Demo](public/screenshots/preview-clip.webp)
 
 ### Dark Mode
 | **Landing** | **Chat** |
 | :---: | :---: |
-| ![Dark Landing](public/screenshots/dark-landing.png) | ![Dark Chat](public/screenshots/chat-preview.png) |
+| ![Dark Landing](public/screenshots/dark-landing.png) | ![Dark Chat](public/screenshots/dark-chat-preview.png) |
 
 ### Light Mode
 | **Landing** | **Chat** |
 | :---: | :---: |
-| ![Light Landing](public/screenshots/light-landing.png) | ![Light Chat](public/screenshots/chat-preview.png) |
+| ![Light Landing](public/screenshots/light-landing.png) | ![Light Chat](public/screenshots/lightchat-preview.png) |
 
 ---
 
