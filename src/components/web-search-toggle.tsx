@@ -41,7 +41,7 @@ export function WebSearchToggle({ webSearch, setWebSearch }: WebSearchToggleProp
                     </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                    <p>Web search might make the answer less grounded</p>
+                    <p>Web search is slower and might make the answer less grounded</p>
                 </TooltipContent>
             </Tooltip>
         </TooltipProvider>

@@ -96,8 +96,8 @@ export async function POST(req: Request) {
                 //This handles tool conversion and automatic function calling
                 //Retry logic for rate limits and model availability
                 const searchModels = [
-                    "gemini-3-flash-preview",           // primary - latest and fastest (20 RPD)
-                    "gemini-2.5-flash",                 // secondary - stable and reliable (15 RPD)
+                    // "gemini-3-flash-preview",           // primary - latest and fastest (20 RPD)
+                    "gemini-2.5-flash",                     // secondary - stable and reliable (15 RPD)
                     "gemini-2.0-flash"                  // fallback - older but still works (15 RPD)
                 ];
 
@@ -143,7 +143,7 @@ export async function POST(req: Request) {
 
         //Build final Context (Database search + Web search)
         //NOTE: change to webSearchContext if using OPTION A (API)
-        const finalContext = `documentation context:${docsContext}\n\n web search context:${mcpWebSearchContext}\n\n `
+        const finalContext = `documentation context:${docsContext}\n\n web search context:${mcpWebSearchContext.length}\n\n `
 
         //Set Up Gemini Stream
         const systemPrompt = `
@@ -161,7 +161,7 @@ export async function POST(req: Request) {
         //stream response from gemini (using context)
         //model fallback chain - tries each model in order until one works
         const modelsToTry = [
-            "gemini-3-flash-preview",                      // primary - latest and fastest (20 RPD)
+            // "gemini-3-flash-preview",                      // primary - latest and fastest (20 RPD)
             "gemini-2.5-flash",                            // secondary - stable fallback (20 RPD)
             "gemma-3-27b-it",                              // fallback - open weights, high limits (14k RPD)
         ];
