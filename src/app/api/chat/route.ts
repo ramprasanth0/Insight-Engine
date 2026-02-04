@@ -175,9 +175,10 @@ export async function POST(req: Request) {
                 }
                 console.log(`✅ Using model: ${modelId}`);
                 break; //success! exit the loop, no need to try other models
-            } catch (error: any) {
+            } catch (error) {
                 //only continue to next model if rate limited (429), otherwise throw
-                if (error.status !== 429) throw error;
+                const status = error instanceof Error && 'status' in error ? (error as { status: number }).status : undefined;
+                if (status !== 429) throw error;
                 console.log(`⚠️ Model ${modelId} rate limited, trying next...`);
                 //loop continues to try next model in the array
             }

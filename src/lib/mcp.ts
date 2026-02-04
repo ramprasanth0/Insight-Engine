@@ -3,9 +3,6 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
-//tavily mcp server endpoint (server-sent events for streaming)
-const TAVILY_MCP_URL = "https://mcp.tavily.com/sse";
-
 //creates and connects an MCP client to tavily's web search server
 export const getMCPClient = async () => {
     const tavilyApiKey = process.env.TAVILY_API_KEY;
