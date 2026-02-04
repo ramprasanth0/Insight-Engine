@@ -1,3 +1,5 @@
+//pinecone.ts - pinecone vector database client setup for semantic search
+
 import { Pinecone } from "@pinecone-database/pinecone";
 
 const pineconeApiKey = process.env.PINECONE_API_KEY;

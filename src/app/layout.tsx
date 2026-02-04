@@ -1,3 +1,5 @@
+//layout.tsx - root layout component with font setup and metadata for the app
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Bitcount_Single } from "next/font/google";
 import "./globals.css";

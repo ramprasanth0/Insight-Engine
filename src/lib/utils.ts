@@ -1,3 +1,5 @@
+//utils.ts - utility functions for className merging with tailwind
+
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 

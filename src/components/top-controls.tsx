@@ -1,3 +1,5 @@
+//top-controls.tsx - mute and dark mode toggle switches in the top right corner
+
 "use client";
 
 import { Sun, Moon, Volume2, VolumeX } from "lucide-react";

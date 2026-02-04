@@ -1,3 +1,5 @@
+//chat-box.tsx - displays the conversation history with user and assistant messages
+
 import { useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";

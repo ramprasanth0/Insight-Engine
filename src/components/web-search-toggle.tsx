@@ -1,3 +1,5 @@
+//web-search-toggle.tsx - toggle switch for enabling tavily web search alongside knowledge base
+
 "use client";
 
 import { Globe } from "lucide-react";

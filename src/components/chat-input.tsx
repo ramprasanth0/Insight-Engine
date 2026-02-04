@@ -1,3 +1,5 @@
+//chat-input.tsx - input field and send button for submitting user queries
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, Send } from "lucide-react";

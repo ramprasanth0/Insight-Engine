@@ -1,3 +1,5 @@
+//namespace-buttons.tsx - toggle buttons for selecting which documentation namespaces to search
+
 "use client";
 
 import { Button } from "@/components/ui/button";

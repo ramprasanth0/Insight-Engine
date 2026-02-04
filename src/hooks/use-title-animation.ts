@@ -1,3 +1,5 @@
+//use-title-animation.ts - custom hook for the scrambling "digital decode" title animation effect
+
 "use client";
 
 import { useState, useEffect } from "react";

@@ -1,3 +1,5 @@
+//page.tsx - main chat page with initial centered layout and full chat state
+
 "use client";
 import { useState, useEffect } from "react";
 import { ChatBox, Message } from "@/components/chat-box";
