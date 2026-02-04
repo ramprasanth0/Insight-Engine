@@ -1,8 +1,11 @@
+//route.ts - chat API endpoint that handles user queries, embeds them, searches pinecone, and streams gemini responses
+
 export const dynamic = 'force-dynamic'; //force dynamic caching
 
 import { gemini } from "@/lib/gemini";
 import { pinecone } from "@/lib/pinecone";
 import { tavily_api } from "@/lib/tavily";
+import { getMCPClient } from "@/lib/mcp";
 import { error } from "console";
 import { NextResponse } from "next/server";
 
@@ -63,21 +66,59 @@ export async function POST(req: Request) {
 
         console.log(`✅ Context built with ${allMatches.length} matches - Docs context`);
 
-        let webSearchContext = "";
-        if (webSearch) {
-            //Get Tavily context (Web search context)
-            const tavilyResponses = await tavily_api.search(
-                lastMessage, {
-                max_results: 5
-            }
-            )
-            webSearchContext = tavilyResponses.results.map((res) => res.content).join("\n\n")
+        ///==================== OPTION A: Direct Tavily API (COMMENTED OUT) ====================///
+        //uncomment this section and comment out MCP section below to use direct API
+        // let webSearchContext = "";
+        // if (webSearch) {
+        //     const tavilyResponses = await tavily_api.search(
+        //         lastMessage, {
+        //         max_results: 5
+        //     }
+        //     )
+        //     webSearchContext = tavilyResponses.results.map((res) => res.content).join("\n\n")
+        //     console.log(`✅ Context built with ${tavilyResponses.results.length} matches - Tavily (Web search) context`);
+        // }
+        ///==================== END OPTION A ====================///
 
-            console.log(`✅ Context built with ${tavilyResponses.results.length} matches - Tavily (Web search) context`);
+        ///==================== OPTION B: MCP Tool Calling (ACTIVE) ====================///
+        //Get Tavily context (Web search context) via MCP - direct tool call
+        //since user controls when to search via toggle, we call the tool directly
+        let mcpWebSearchContext = "";
+        if (webSearch) {
+            //get mcp client and discover available tools
+            const mcpClient = await getMCPClient();
+            const { tools } = await mcpClient.listTools();
+            console.log(`✅ MCP tools discovered: ${tools.map(t => t.name).join(", ")}`);
+
+            //find the search tool (tavily exposes "search" or "tavily_search")
+            const searchTool = tools.find(t => t.name.includes("search"));
+            if (searchTool) {
+                console.log(`✅ Calling MCP tool: ${searchTool.name}`);
+
+                //call the search tool directly with user's query
+                const toolResult = await mcpClient.callTool({
+                    name: searchTool.name,
+                    arguments: { query: lastMessage },
+                });
+
+                //extract text content from MCP response
+                //MCP returns: { content: [{ type: "text", text: "..." }, ...] }
+                const resultContent = toolResult.content as Array<{ type: string; text?: string }>;
+                mcpWebSearchContext = resultContent
+                    .filter(c => c.type === "text" && c.text)
+                    .map(c => c.text!)
+                    .join("\n\n");
+
+                console.log(`✅ MCP tool result received (${mcpWebSearchContext.length} chars)`);
+            } else {
+                console.log("⚠️ No search tool found in MCP tools");
+            }
         }
+        ///==================== END OPTION B ====================///
 
         //Build final Context (Database search + Web search)
-        const finalContext = `documentation context:${docsContext}\n\n web search context:${webSearchContext}\n\n `
+        //NOTE: change to webSearchContext if using OPTION A (API)
+        const finalContext = `documentation context:${docsContext}\n\n web search context:${mcpWebSearchContext}\n\n `
 
         //Set Up Gemini Stream
         const systemPrompt = `
