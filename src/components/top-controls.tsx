@@ -29,7 +29,7 @@ export function TopControls({
     return (
         <div className="absolute top-4 right-4 flex items-center gap-3">
             {/* Mute Toggle */}
-            <TooltipProvider>
+            {/* <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <div className="flex items-center">
@@ -54,7 +54,7 @@ export function TopControls({
                         <p>{isMuted ? "Unmute sounds" : "Mute sounds"}</p>
                     </TooltipContent>
                 </Tooltip>
-            </TooltipProvider>
+            </TooltipProvider> */}
 
             {/* Theme Toggle */}
             <TooltipProvider>

@@ -42,7 +42,7 @@ export async function POST(req: Request) {
         // Parallel query for all targeted namespaces
         const queryPromises = targetNamespaces.map((ns: string) =>
             //search user selected namespaces 
-            pc.index("insight-engine-index").namespace(ns).query({
+            pc.index("insight-engine-index-v2").namespace(ns).query({
                 topK: 5, // Reduce topK per namespace since we are aggregating
                 vector: queryVector,
                 includeMetadata: true
@@ -143,7 +143,7 @@ export async function POST(req: Request) {
 
         //Build final Context (Database search + Web search)
         //NOTE: change to webSearchContext if using OPTION A (API)
-        const finalContext = `documentation context:${docsContext}\n\n web search context:${mcpWebSearchContext.length}\n\n `
+        const finalContext = `documentation context:${docsContext}\n\n web search context:${mcpWebSearchContext}\n\n `
 
         //Set Up Gemini Stream
         const systemPrompt = `
