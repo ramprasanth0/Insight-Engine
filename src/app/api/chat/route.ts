@@ -25,7 +25,7 @@ export async function POST(req: Request) {
 
         //embed the user query
         const embeddingResponse = await client.models.embedContent({
-            model: "text-embedding-004",
+            model: "gemini-embedding-001",
             contents: [{ parts: [{ text: lastMessage }] }],
         })
         const queryVector = embeddingResponse.embeddings?.[0].values

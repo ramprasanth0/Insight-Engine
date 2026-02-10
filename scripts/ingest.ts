@@ -63,7 +63,7 @@ async function main() {
         }
     };
     const vectorDocs: VectorDoc[] = []
-    const MODEL_NAME = "text-embedding-004";
+    const MODEL_NAME = "gemini-embedding-001";
 
     // Looping through splitDocs in chunks of 10
     for (let i = 0; i < splitDocs.length; i += 10) {
@@ -119,7 +119,7 @@ async function main() {
     const pc = new Pinecone({ apiKey: pineconeApiKey });
 
     //configure index
-    const INDEX_NAME = "insight-engine-index";
+    const INDEX_NAME = "insight-engine-index-v2";
     const index = pc.index(INDEX_NAME);
     const existingIndexes = pc.listIndexes();
     const indexExists = (await existingIndexes).indexes?.some(idx => idx.name === INDEX_NAME)
@@ -128,7 +128,7 @@ async function main() {
         console.log(`Creating index ${INDEX_NAME}...`)
         await pc.createIndex({
             name: INDEX_NAME,
-            dimension: 768,
+            dimension: 3072,
             metric: "cosine",
             spec: {
                 serverless: { cloud: 'aws', region: 'us-east-1' }
